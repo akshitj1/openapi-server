@@ -1,0 +1,31 @@
+# https://davidgarcia.dev/posts/how-to-split-open-api-spec-into-multiple-files/
+openapi: 3.0.1
+info:
+  title: Greeter apis
+  description: APIs to enable greet and meet
+  version: 1.0.6
+servers:
+  - url: /v1
+
+#------------------------ api calls -------------------------
+paths:
+  /alive/{name}:
+    get:
+      summary: Check if person is alive?
+      operationId: isAlive
+      parameters:
+        - in: path
+          name: name
+          description: name of the person
+          schema:
+            type: string
+          required: true
+      responses:
+        200:
+          description: Responds with whether person is alive or not
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: yes
+      x-codegen-request-body-name: isAlive

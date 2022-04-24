@@ -1,0 +1,92 @@
+buildscript {
+    ext {
+        springVersion = '2.3.12.RELEASE'
+        springPluginVersion = '1.0.11.RELEASE'
+        sprinFoxSwaggerVersion = '3.0.0'
+        openApiVersion = '5.3.0'
+        javaValidationVersion = '2.0.1.Final'
+    }
+}
+
+plugins {
+    id 'java'
+    id 'io.spring.dependency-management' version "${springPluginVersion}"
+    id 'org.springframework.boot' version "${springVersion}"
+    id "org.openapi.generator" version "${openApiVersion}"
+}
+
+group 'com.akshit.services'
+version '1.0-SNAPSHOT'
+
+java{
+    toolchain{
+        languageVersion.set(JavaLanguageVersion.of(11))
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation platform("org.springframework.boot:spring-boot-dependencies:${springVersion}")
+    implementation 'org.springframework.boot:spring-boot-starter'
+
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
+    compileOnly 'org.projectlombok:lombok'
+    annotationProcessor 'org.projectlombok:lombok'
+
+    // swagger
+    implementation "io.springfox:springfox-boot-starter:${sprinFoxSwaggerVersion}"
+
+    // for openapi
+    implementation "javax.validation:validation-api:${javaValidationVersion}"
+}
+
+openApiGenerate {
+    generatorName = "spring"
+    inputSpec = "$projectDir/src/main/resources/api/greeting_api.yml".toString()
+    outputDir = "$buildDir/generated".toString()
+    apiPackage = "io.tej.SwaggerCodgen.api"
+    invokerPackage = "com.akshit.services.controllers"
+    modelPackage = "io.tej.SwaggerCodgen.model"
+    configOptions = [
+            sourceFolder: "src/main/java/",
+            delegatePattern: "true",
+            interfaceOnly: "true"
+    ]
+}
+
+compileJava.dependsOn tasks.openApiGenerate
+
+sourceSets {
+    main {
+        java {
+            srcDir "$buildDir/generated/src/main/java"
+        }
+    }
+}
+
+task buildJavaClient(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask){
+    generatorName = "java"
+    inputSpec = "$projectDir/src/main/resources/api/greeting_api.yml".toString()
+    outputDir = "$buildDir/generated/greeter-client".toString()
+    apiPackage = "com.akshit.clients.api"
+    invokerPackage = "com.akshit.clients.invoker"
+    modelPackage = "com.akshit.clients.model"
+    configOptions = [
+            dateLibrary: "java8",
+            apiPackage: "com.akshit.client.api",
+            artifactId: "greeter-client",
+            artifactVersion: "1.0.0",
+            groupId: "com.akshit"
+    ]
+    globalProperties = [
+            modelDocs: "false"
+    ]
+}
+
+task publishJavaClientToLocal(type: Exec, dependsOn: buildJavaClient){
+    commandLine 'mvn', 'install', '-f', 'build/generated/greeter-client/pom.xml'
+}
