@@ -9,7 +9,7 @@ servers:
 
 #------------------------ api calls -------------------------
 paths:
-  /alive/{name}:
+  /hello/alive/{name}:
     get:
       summary: Check if person is alive?
       operationId: isAlive
@@ -29,3 +29,35 @@ paths:
                 type: string
                 example: yes
       x-codegen-request-body-name: isAlive
+  /hello/greet:
+    post:
+      summary: Say your name, and receive a warm greeting
+      operationId: receiveGreetings
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Greeter'
+      responses:
+        200:
+          description: Greeting response personlized for you
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Greetings'
+      x-codegen-request-body-name: greeter
+
+#------------------------- schemas -------------------------
+
+components:
+  schemas:
+    Greeter:
+      type: object
+      properties:
+        name:
+          type: string
+    Greetings:
+      type: object
+      properties:
+        reply:
+          type: string

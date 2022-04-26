@@ -18,8 +18,8 @@ plugins {
 group 'com.akshit.services'
 version '1.0-SNAPSHOT'
 
-java{
-    toolchain{
+java {
+    toolchain {
         languageVersion.set(JavaLanguageVersion.of(11))
     }
 }
@@ -52,9 +52,11 @@ openApiGenerate {
     invokerPackage = "com.akshit.services.controllers"
     modelPackage = "io.tej.SwaggerCodgen.model"
     configOptions = [
-            sourceFolder: "src/main/java/",
-            delegatePattern: "true",
-            interfaceOnly: "true"
+            sourceFolder                  : "src/main/java/",
+            delegatePattern               : "true",
+            interfaceOnly                 : "true",
+            openApiNullable               : "false",
+            additionalModelTypeAnnotations: "@lombok.AllArgsConstructor @lombok.Builder @lombok.NoArgsConstructor"
     ]
 }
 
@@ -68,25 +70,26 @@ sourceSets {
     }
 }
 
-task buildJavaClient(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask){
+task buildJavaClient(type: org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
     generatorName = "java"
+    library = "jersey2"
     inputSpec = "$projectDir/src/main/resources/api/greeting_api.yml".toString()
     outputDir = "$buildDir/generated/greeter-client".toString()
     apiPackage = "com.akshit.clients.api"
     invokerPackage = "com.akshit.clients.invoker"
     modelPackage = "com.akshit.clients.model"
     configOptions = [
-            dateLibrary: "java8",
-            apiPackage: "com.akshit.client.api",
-            artifactId: "greeter-client",
+            dateLibrary    : "java8",
+            apiPackage     : "com.akshit.client.api",
+            artifactId     : "greeter-client",
             artifactVersion: "1.0.0",
-            groupId: "com.akshit"
+            groupId        : "com.akshit",
     ]
     globalProperties = [
             modelDocs: "false"
     ]
 }
 
-task publishJavaClientToLocal(type: Exec, dependsOn: buildJavaClient){
+task publishJavaClientToLocal(type: Exec, dependsOn: buildJavaClient) {
     commandLine 'mvn', 'install', '-f', 'build/generated/greeter-client/pom.xml'
 }
